@@ -1,0 +1,43 @@
+<do>
+    <opt log="true"></opt>
+    <sql>DROP TABLE IF EXISTS std</sql>
+    <sql>
+        CREATE TEXT TABLE std (
+        lehrer VARCHAR(16),
+        jahr NUMERIC,
+        monat NUMERIC,
+        tag NUMERIC,
+        stunde NUMERIC,
+        fach VARCHAR(16),
+        klasse VARCHAR(16),
+        raum VARCHAR(16),
+        i1 NUMERIC,
+        i2 NUMERIC,
+        i3 NUMERIC,
+        i4 NUMERIC,
+        dauer NUMERIC,
+        i5 NUMERIC
+        )
+    </sql>
+    <sql>DROP TABLE IF EXISTS ber</sql>
+    <sql>
+        CREATE TEXT TABLE ber (
+        klasse VARCHAR(16),
+        bereich VARCHAR(16)
+        )
+    </sql>
+    <sql>SET TABLE std SOURCE 'ExportAktuellerUnterricht.TXT; all_quoted=true'</sql>
+    <sql>SET TABLE ber SOURCE 'KlassenBereiche.TXT;all_quoted=true'</sql>
+    <out file="BereichLehrerStunden.txt" cols="bereich,lehrer,sdauer">
+        SELECT bereich, lehrer, SUM(dauer)/45 AS sdauer
+        FROM (
+        SELECT MAX(bereich) AS bereich, MAX(lehrer) AS lehrer, MAX(dauer) AS dauer
+        FROM std
+        JOIN ber ON std.klasse = ber.klasse
+        GROUP BY lehrer, jahr, monat, tag, stunde
+        ORDER BY bereich, lehrer
+        )
+        GROUP BY bereich, lehrer
+        ORDER BY bereich, lehrer
+    </out>
+</do>
