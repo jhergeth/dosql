@@ -6,7 +6,7 @@ import groovy.sql.Sql
 import java.nio.file.FileSystemException
 import java.sql.SQLException
 
-def myLog = 0;
+myLog = 0;
 
 
 myDb = null
@@ -28,30 +28,6 @@ void sDB(def path, def con, def usr, def pw, def cls) {
     }
 }
 
-class MYDB {
-    static Sql con = null
-    def test = "Text"
-
-    Sql getDb() {
-        if (con == null) {
-            con = Sql.newInstance("jdbc:hsqldb:file:testdb", 'sa', '', 'org.hsqldb.jdbc.JDBCDriver')
-            return con
-        }
-    }
-
-    void setDb(def path, def con, def usr, def pw, def cls) {
-        try {
-            this.class.classLoader.rootLoader.addURL(new URL("file:///${path}"))
-//create a new file database and a table corresponding to the csv file
-            con = Sql.newInstance(con, usr, pw, cls)
-        }
-        catch (Exception e) {
-            println("Cannot connect to database.Error: ${e.message}")
-        }
-    }
-}
-
-
 void log(str) {
     if (myLog)
         println(str)
@@ -59,8 +35,6 @@ void log(str) {
 
 
 void doit(it) {
-//    MYDB db = new MYDB()
-
     if (it.name() == 'exc') {
         if (it.@file == null) {
             println("exc-command without file attribute!")
@@ -87,6 +61,7 @@ void doit(it) {
         }
     } else if (it.name() == 'out') {
         log("out to file <${it.@file}> with <${it.text()}>")
+        Integer cnt = 0
         def sFile = it.@file
         if (sFile == null) {
             def cols = (it.@cols).split(',')
@@ -96,6 +71,7 @@ void doit(it) {
                         print("${row[c].toString().trim()},")
                     }
                     println("")
+                    cnt++
                 }
             }
             catch (SQLException e) {
@@ -112,6 +88,7 @@ void doit(it) {
                         wtr.write("${row[c].toString().trim()},")
                     }
                     wtr.writeLine("")
+                    cnt++
                 }
                 wtr.close()
             } catch (FileSystemException e) {
@@ -122,6 +99,7 @@ void doit(it) {
                 return
             }
         }
+        log("${cnt} lines written")
     }
 }
 
