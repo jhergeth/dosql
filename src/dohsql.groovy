@@ -6,9 +6,7 @@ import groovy.sql.Sql
 import java.nio.file.FileSystemException
 import java.sql.SQLException
 
-myLog = 0;
-
-
+myLog = false;
 myDb = null
 
 Sql rDB() {
@@ -48,8 +46,13 @@ void doit(it) {
         log("exc finished processing file <${it.@file}>")
     } else if (it.name() == 'opt') {
         myLog = it.@log == 'true' || it.@log == '1'
+        log("Set log to  <${myLog}>")
     } else if (it.name() == 'open') {
-        sDB(it.text(), it.@con, it.@usr, it.@pas, it.@drv)
+        String slib = it.text()
+        slib = slib.trim()
+        slib = slib.replace('\\', '/')
+        sDB(slib, it.@con, it.@usr, it.@pas, it.@drv)
+        log("Connect using <${slib}>")
     } else if (it.name() == 'sql') {
         log("sql with <${it.text()}>")
         try {
