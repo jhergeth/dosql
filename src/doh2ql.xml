@@ -1,0 +1,47 @@
+<do>
+    <opt log="true"></opt>
+    <open con="jdbc:h2:~/test;database_to_upper=false" usr="sa" pw="" drv="org.h2.Driver">
+        C:\BIN\H2\bin\h2-1.4.180.jar
+    </open>
+    <sql>DROP TABLE IF EXISTS std</sql>
+    <sql>
+        CREATE TABLE std (
+        lehrer VARCHAR(64),
+        jahr INT,
+        monat INT,
+        tag INT,
+        stunde INT,
+        fach VARCHAR(64),
+        klasse VARCHAR(64),
+        raum VARCHAR(64),
+        i1 INT,
+        i2 INT,
+        i3 INT,
+        i4 INT,
+        dauer INT,
+        i5 INT
+        )
+        AS SELECT * FROM CSVREAD('ExportAktuellerUnterricht.TXT',
+        'lehrer,jahr,monat,tag,stunde,fach,klasse,raum,i1,i2,i3,i4,dauer,i5')
+    </sql>
+    <sql>DROP TABLE IF EXISTS ber</sql>
+    <sql>
+        CREATE TABLE ber
+        AS SELECT * FROM CSVREAD('KlassenBereiche.TXT', 'klasse,bereich')
+    </sql>
+    <sql>DROP TABLE IF EXISTS StdBereich</sql>
+    <sql>
+        CREATE TABLE StdBereich
+        AS SELECT MAX(bereich) AS bereich, lehrer, MAX(dauer) AS dauer
+        FROM std
+        JOIN ber ON std.klasse = ber.klasse
+        GROUP BY lehrer, jahr, monat, tag, stunde
+        ORDER BY bereich, lehrer
+    </sql>
+    <out file="BereichLehrerStunden.txt" cols="bereich,lehrer,sdauer">
+        SELECT bereich, lehrer, SUM(dauer)/45 AS sdauer
+        FROM StdBereich
+        GROUP BY bereich, lehrer
+        ORDER BY bereich, lehrer
+    </out>
+</do>
