@@ -1,0 +1,34 @@
+<do>
+    <opt log="true"/>
+    <open con="jdbc:h2:~/test" usr="sa" pw="" drv="org.h2.Driver">
+        C:\BIN\H2\bin\h2-1.4.180.jar
+    </open>
+    <sql>DROP TABLE IF EXISTS std</sql>
+    <sql>
+        CREATE TABLE std
+        AS SELECT * FROM CSVREAD('ExportAktuellerUnterricht.TXT',
+        'lehrer,jahr,monat,tag,stunde,fach,klasse,raum,i1,i2,i3,i4,dauer,i5')
+    </sql>
+    <sql>DROP TABLE IF EXISTS ber</sql>
+    <sql>
+        CREATE TABLE ber
+        AS SELECT * FROM CSVREAD('KlassenBereiche.TXT', 'KLASSE,BEREICH')
+    </sql>
+    <out file="Test1.txt" cols="bereich,klasse">
+        SELECT *
+        FROM ber
+        ORDER BY bereich
+    </out>
+    <out file="BereichLehrerStunden.txt" cols="bereich,lehrer,sdauer">
+        SELECT bereich, lehrer, SUM(dauer)/45 AS sdauer
+        FROM (
+        SELECT MAX(bereich) AS bereich, MAX(lehrer) AS lehrer, MAX(dauer) AS dauer
+        FROM std
+        JOIN ber ON std.klasse = ber.klasse
+        GROUP BY lehrer, jahr, monat, tag, stunde
+        ORDER BY bereich, lehrer
+        )
+        GROUP BY bereich, lehrer
+        ORDER BY bereich, lehrer
+    </out>
+</do>

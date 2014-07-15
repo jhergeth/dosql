@@ -1,5 +1,5 @@
 <do>
-    <opt log="true"></opt>
+    <opt log="true"/>
     <open con="jdbc:h2:~/test;database_to_upper=false" usr="sa" pw="" drv="org.h2.Driver">
         C:\BIN\H2\bin\h2-1.4.180.jar
     </open>

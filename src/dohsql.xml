@@ -1,5 +1,5 @@
 <do>
-    <opt log="true"></opt>
+    <opt log="true"/>
     <open con="jdbc:hsqldb:file:testdb" usr="sa" pw="" drv="org.hsqldb.jdbc.JDBCDriver">
         C:\BIN\hsqldb\lib\hsqldb.jar
     </open>
