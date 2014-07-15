@@ -1,22 +1,25 @@
 <do>
     <opt log="true"></opt>
+    <open con="jdbc:hsqldb:file:testdb" usr="sa" pw="" drv="org.hsqldb.jdbc.JDBCDriver">
+        C:\BIN\hsqldb\lib\hsqldb.jar
+    </open>
     <sql>DROP TABLE IF EXISTS std</sql>
     <sql>
         CREATE TEXT TABLE std (
-        lehrer VARCHAR(16),
-        jahr NUMERIC,
-        monat NUMERIC,
-        tag NUMERIC,
-        stunde NUMERIC,
-        fach VARCHAR(16),
-        klasse VARCHAR(16),
-        raum VARCHAR(16),
-        i1 NUMERIC,
-        i2 NUMERIC,
-        i3 NUMERIC,
-        i4 NUMERIC,
-        dauer NUMERIC,
-        i5 NUMERIC
+        lehrer VARCHAR(64),
+        jahr INT,
+        monat INT,
+        tag INT,
+        stunde INT,
+        fach VARCHAR(64),
+        klasse VARCHAR(64),
+        raum VARCHAR(64),
+        i1 INT,
+        i2 INT,
+        i3 INT,
+        i4 INT,
+        dauer INT,
+        i5 INT
         )
     </sql>
     <sql>DROP TABLE IF EXISTS ber</sql>
@@ -28,16 +31,21 @@
     </sql>
     <sql>SET TABLE std SOURCE 'ExportAktuellerUnterricht.TXT; all_quoted=true'</sql>
     <sql>SET TABLE ber SOURCE 'KlassenBereiche.TXT;all_quoted=true'</sql>
-    <out file="BereichLehrerStunden.txt" cols="bereich,lehrer,sdauer">
-        SELECT bereich, lehrer, SUM(dauer)/45 AS sdauer
-        FROM (
-        SELECT MAX(bereich) AS bereich, MAX(lehrer) AS lehrer, MAX(dauer) AS dauer
+    <sql>DROP TABLE IF EXISTS StdBereich</sql>
+    <sql>
+        CREATE TABLE StdBereich (bereich, lehrer, dauer)
+        AS ( SELECT MAX(bereich) AS bereich, lehrer, MAX(dauer) AS dauer
         FROM std
         JOIN ber ON std.klasse = ber.klasse
         GROUP BY lehrer, jahr, monat, tag, stunde
-        ORDER BY bereich, lehrer
-        )
+        ORDER BY bereich, lehrer )
+        WITH DATA
+    </sql>
+    <out file="BereichLehrerStunden.txt" cols="bereich,lehrer,sdauer">
+        SELECT bereich, lehrer, SUM(dauer)/45 AS sdauer
+        FROM StdBereich
         GROUP BY bereich, lehrer
         ORDER BY bereich, lehrer
     </out>
+
 </do>
